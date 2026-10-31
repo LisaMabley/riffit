@@ -41,6 +41,20 @@ pnpm test            # run the TypeScript tests
 
 The seed creates three users who have finished onboarding: `maya`, `jo.makes`, and `sam_k`. They can't sign in yet because sign-in isn't built.
 
+### Running the app on a phone
+
+The app talks to the local Supabase stack. On a phone, `localhost` and `127.0.0.1` mean the phone itself, so the app needs your computer's address on the network.
+
+1. Find your computer's LAN address, such as `192.168.1.20`. On Windows, run `ipconfig` and use the IPv4 address of your Wi-Fi adapter, not one from WSL or Docker. On macOS, run `ipconfig getifaddr en0`.
+2. Copy `apps/mobile/.env.example` to `apps/mobile/.env`.
+3. Set `EXPO_PUBLIC_SUPABASE_URL` to `http://<LAN address>:54321`.
+4. Set `EXPO_PUBLIC_SUPABASE_PUBLISHABLE_KEY` to `PUBLISHABLE_KEY` from `pnpm supabase status`. Never use the secret key, because this value ships inside the app.
+5. Start Supabase and Expo, then open the app on a phone on the same Wi-Fi.
+
+Expo reads `.env` when it starts, so restart it after changing the file, and update the address if your router assigns a new one. A missing or invalid value stops the app with an error naming the variable.
+
+The Feed screen shows `Supabase: reached` with a status code when the phone gets an answer. It's a temporary check, and the 401 you'll see is expected: signed-out users can't read profiles. If it says `not reached`, check that the phone and computer are on the same network, that your firewall allows inbound connections on port 54321, and that Expo Go has Local Network permission in the iPhone's settings.
+
 ## Commands
 
 | Command | What it does |
