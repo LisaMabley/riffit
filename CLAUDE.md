@@ -6,7 +6,7 @@ Riffit (working name) is a fashion community built on **riffs**: someone posts a
 
 ## Status
 
-Phase 1 (invite-only friends beta) is in progress. So far: the database foundation for users (profiles and the 18+ check), RLS, and tests. The Expo app exists as a scaffold in `apps/mobile`. **Not started:** posts, images, and riffs; sign-in; everything after that. Build phase by phase (§17), extending the schema with new migrations rather than modeling future phases up front. Check §4 "Out of scope" and §20 before adding anything.
+Phase 1 (invite-only friends beta) is in progress. So far: the database foundation for users (profiles and the 18+ check), RLS, and tests. The Expo app exists as a scaffold in `apps/mobile`. **Not started:** posts, images, and riffs; everything after that. Sign-in and onboarding come last in Phase 1 (§17, item 11). Until then, dev builds sign in as seeded test users: read the current user from the session, never from a hard-coded ID. Build phase by phase (§17), extending the schema with new migrations rather than modeling future phases up front. Check §4 "Out of scope" and §20 before adding anything.
 
 ## Work in small chunks
 

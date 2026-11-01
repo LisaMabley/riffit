@@ -298,7 +298,9 @@ This document describes the full MVP. **Build it in phases, not all at once.** E
 
 _Goal: test success milestones 1 and 2 with an invite-only group (TestFlight / Expo)._
 
-1. Monorepo, Expo app, Supabase project, sign-in (email code, Apple, Google), 18+ check at signup (birth date not stored), code of conduct agreement, basic profiles.
+_Items run in this order, so the core loop gets built before sign-in. Until item 11, dev builds sign in as seeded test users, and RLS applies as it will for real users. Nobody outside development gets the app before item 11 is done._
+
+1. Monorepo, Expo app, Supabase project, basic profiles, and dev-only sign-in as a seeded test user.
 2. **Early check:** image processing on Supabase Edge Functions (fall back to a small Hono/Node service if needed).
 3. Image posts: upload, EXIF stripping, resizing, reordering, alt text prompt.
 4. Riffs: the "riffed from" link with the 24-hour rule, riffs listed on the original, placeholder card, a celebration on publishing.
@@ -308,6 +310,7 @@ _Goal: test success milestones 1 and 2 with an invite-only group (TestFlight / E
 8. Blocking (full rules from section 13).
 9. **Simple reporting:** every report hides the content for the reporter and emails the moderator. All review is manual, using the Supabase dashboard and a saved query for open reports.
 10. Riff and comment notifications (in-app).
+11. Sign-in (email code, Apple, Google) and onboarding: 18+ check at signup (birth date not stored) and code of conduct agreement.
 
 **End-to-end milestone:** a user creates a profile and an outfit post; another user riffs on it; the original shows its riffs; both users can comment and tag; reporting and blocking work.
 
@@ -366,11 +369,6 @@ Possible later metrics, once there's a real user base: share of posts that are r
 - Search scope: tags only, or also usernames and post text?
 - Text limits for posts, comments, and tags.
 - **Holding harmful comments before they reach the recipient.** Moderation today is reactive (§13): content goes live, then reports hide it. Holding comments first needs either automated detection, which §4 puts out of scope, or a moderator reviewing them, and there's one moderator at launch. Undecided whether to do this, and how.
-- **"Who is in this photo?" at upload** (Me / Someone else / AI-generated / Unknown). Proposed 2026-10-29 so that style reference pages (§20) stay possible later. Not yet in the MVP spec. Undecided:
-  - whether it's in the MVP, and in which phase;
-  - per post or per image (AI labels are per image, §10), and how its "AI-generated" option relates to the AI toggle;
-  - whether to collect a name and source link for "Someone else," given that §4 puts external links out of scope;
-  - how to avoid storing the names of private people who aren't members (a friend in the photo, not a public figure).
 
 ## 20. Later (not MVP)
 
@@ -423,7 +421,13 @@ Members may post photos of looks worn by public figures (celebrities, influencer
 - Uploaders are responsible for having the rights or legal basis to post. Encourage source URLs and photographer credit, but credit isn't permission.
 - Builds on the DMCA process in §14 (designated agent, counter-notice, repeat-infringer policy). Get a legal review before the public launch.
 
-**Deferred until after the MVP:** the pages themselves, merging duplicates, and name autocomplete go in Phase 4. Claiming, identity verification, and automatic matching come after that. What the MVP collects at upload is an open question (§19).
+**Deferred until after the MVP:** the pages themselves, merging duplicates, and name autocomplete go in Phase 4. Claiming, identity verification, and automatic matching come after that.
+
+**"Who is in this photo?" at upload** (Me / Someone else / AI-generated / Unknown) was proposed on 2026-10-29 and left out of the MVP on 2026-11-01, so the MVP collects nothing about who's in a photo. If it comes back with Phase 4, it still needs answers to:
+
+- per post or per image (AI labels are per image, §10), and how its "AI-generated" option relates to the AI toggle;
+- whether to collect a name and source link for "Someone else";
+- how to avoid storing the names of private people who aren't members (a friend in the photo, not a public figure).
 
 ## 21. Visual direction
 
