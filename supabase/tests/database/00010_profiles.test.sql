@@ -1,5 +1,5 @@
 begin;
-select plan(24);
+select plan(32);
 
 select tests.create_profile('test_maya');
 select tests.create_profile('test_jamie');
@@ -134,6 +134,52 @@ select throws_ok(
   $$ select tests.create_profile('ab') $$,
   '23514', null,
   'usernames must be at least 3 characters'
+);
+
+select throws_ok(
+  $$ select tests.create_profile('.test_maya2') $$,
+  '23514', null,
+  'usernames cannot start with a period'
+);
+
+select throws_ok(
+  $$ select tests.create_profile('test_maya2.') $$,
+  '23514', null,
+  'usernames cannot end with a period'
+);
+
+select throws_ok(
+  $$ select tests.create_profile('test..maya2') $$,
+  '23514', null,
+  'usernames cannot have two periods in a row'
+);
+
+select throws_ok(
+  $$ select tests.create_profile('-test_maya2') $$,
+  '23514', null,
+  'usernames cannot start with a hyphen'
+);
+
+select throws_ok(
+  $$ select tests.create_profile('test_maya2-') $$,
+  '23514', null,
+  'usernames cannot end with a hyphen'
+);
+
+select throws_ok(
+  $$ select tests.create_profile('test--maya2') $$,
+  '23514', null,
+  'usernames cannot have two hyphens in a row'
+);
+
+select lives_ok(
+  $$ select tests.create_profile('test.mary-jo.k') $$,
+  'usernames can have periods and hyphens between other characters'
+);
+
+select lives_ok(
+  $$ select tests.create_profile('_test__maya_') $$,
+  'usernames can start, end, and repeat underscores'
 );
 
 select throws_ok(
