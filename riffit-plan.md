@@ -69,6 +69,14 @@ _This is the full MVP. It's built in three phases; see section 17 for what comes
 - Shopping and affiliate links, creator monetization, federation, advanced analytics, AI styling
 - Automated moderation, appeals, strike systems
 
+**Usernames**
+
+- 3–30 characters: lowercase letters, numbers, underscores, periods, and hyphens. Case is ignored, so `Maya` and `maya` are the same name.
+- Periods and hyphens can't come first or last, or twice in a row. Underscores have no such limits.
+- Names people could mistake for the app or its staff are reserved (`admin`, `support`, `riff`, and similar). The check ignores case, periods, hyphens, and underscores, so `ad.min` is reserved too.
+- Offensive names use the blocked-words list from §8, matching whole names only, because matching inside names blocks innocent ones. Anything that gets through is handled through reports.
+- Web profile URLs use `/u/<username>`, so a username can't collide with a page like `/login`.
+
 ## 5. Feed and discovery
 
 - **Default:** most recent first. Shows both original posts and riffs; riffs show "riffed from @someone."
