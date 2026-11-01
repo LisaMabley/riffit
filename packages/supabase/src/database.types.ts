@@ -54,6 +54,19 @@ export type Database = {
         };
         Relationships: [];
       };
+      reserved_usernames: {
+        Row: {
+          username: string;
+        };
+        ComputedFields: never;
+        Insert: {
+          username: string;
+        };
+        Update: {
+          username?: string;
+        };
+        Relationships: [];
+      };
     };
     Views: {
       [_ in never]: never;

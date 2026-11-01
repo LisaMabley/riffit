@@ -2,11 +2,29 @@ import { describe, expect, it } from 'vitest';
 import { usernameSchema } from './username';
 
 describe('usernameSchema', () => {
-  it.each(['maya', 'a_b.c', 'abc', 'x'.repeat(30), 'thrift.2026'])('accepts %s', (name) => {
-    expect(usernameSchema.safeParse(name).success).toBe(true);
-  });
+  it.each(['maya', 'a_b.c', 'abc', 'x'.repeat(30), 'thrift.2026', 'mary-jo', 'mary.jo.k', 'a.-b'])(
+    'accepts %s',
+    (name) => {
+      expect(usernameSchema.safeParse(name).success).toBe(true);
+    },
+  );
 
-  it.each(['ab', 'x'.repeat(31), 'has space', 'émile', 'dash-name', ''])('rejects %j', (name) => {
+  it.each([
+    'ab',
+    'x'.repeat(31),
+    'has space',
+    'émile',
+    '',
+    '.maya',
+    'maya.',
+    'a..b',
+    '-maya',
+    'maya-',
+    'a--b',
+    '_maya',
+    'maya_',
+    'a__b',
+  ])('rejects %j', (name) => {
     expect(usernameSchema.safeParse(name).success).toBe(false);
   });
 
