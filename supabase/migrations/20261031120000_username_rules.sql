@@ -1,15 +1,15 @@
--- Username rules (spec §4): hyphens are allowed, periods and hyphens can't start, end, or repeat,
--- and some names are reserved.
+-- Username rules (spec §4): hyphens are allowed, separators (periods, hyphens, and underscores)
+-- can't start, end, or repeat, and some names are reserved.
 
 alter table public.profiles drop constraint profiles_username_format;
 
 -- Mirrors USERNAME_PATTERN in packages/core/src/username.ts.
 alter table public.profiles add constraint profiles_username_format check (
-  username ~ '^(?![.-])(?!.*[.-]$)(?!.*(\.\.|--))[a-z0-9_.-]{3,30}$'
+  username ~ '^(?![._-])(?!.*[._-]$)(?!.*(\.\.|--|__))[a-z0-9_.-]{3,30}$'
 );
 
 -- Names people could mistake for the app or its staff. Stored without separators, because
--- complete_onboarding() compares with them removed: 'admin' also covers 'ad.min' and 'admin_'.
+-- complete_onboarding() compares with them removed: 'admin' also covers 'ad.min' and 'ad_min'.
 -- A table rather than a list in code, so a name can be added without a release. Only
 -- complete_onboarding() reads it, and API users have no access.
 create table public.reserved_usernames (

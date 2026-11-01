@@ -55,7 +55,7 @@ select throws_ok(
 );
 
 select throws_ok(
-  $$ select public.complete_onboarding('support_', 'Maya', '1990-01-01') $$,
+  $$ select public.complete_onboarding('sup_port', 'Maya', '1990-01-01') $$,
   'P0001', 'username_reserved',
   'the reserved check ignores underscores'
 );
