@@ -34,5 +34,5 @@ where email like '%@example.test';
 insert into public.profiles (id, username, display_name, bio, age_confirmed_at)
 values
   ('00000000-0000-4000-8000-000000000001', 'maya', 'Maya', 'Thrift store maximalist.', now()),
-  ('00000000-0000-4000-8000-000000000002', 'jo.makes', 'Jo', null, now()),
+  ('00000000-0000-4000-8000-000000000002', 'jo.makes', 'Jo', 'Visible mending and too many scarves.', now()),
   ('00000000-0000-4000-8000-000000000003', 'sam_k', 'Sam K', 'Mostly black, sometimes more black.', now());
