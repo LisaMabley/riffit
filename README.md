@@ -53,7 +53,7 @@ The app talks to the local Supabase stack. On a phone, `localhost` and `127.0.0.
 
 Expo reads `.env` when it starts, so restart it after changing the file, and update the address if your router assigns a new one. A missing or invalid value stops the app with an error naming the variable.
 
-The Profile tab shows `@maya` when the phone reaches the stack. If it doesn't, check that the phone and computer are on the same network, that your firewall allows inbound connections on port 54321, and that Expo Go has Local Network permission in the iPhone's settings. After `pnpm db:reset`, restart the app.
+The Profile tab shows `@maya` when the phone reaches the stack. If it doesn't, first check that the address in `.env` still matches your computer's, since routers can reassign them. Then check that the phone and computer are on the same network, that your firewall allows inbound connections on port 54321, and that Expo Go has Local Network permission in the iPhone's settings. After `pnpm db:reset`, restart the app.
 
 ## Commands
 
