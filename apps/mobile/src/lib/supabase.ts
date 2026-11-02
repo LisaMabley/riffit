@@ -9,8 +9,10 @@ const env = parseEnv({
   EXPO_PUBLIC_SUPABASE_PUBLISHABLE_KEY: process.env.EXPO_PUBLIC_SUPABASE_PUBLISHABLE_KEY,
 });
 
+export const supabaseUrl = env.EXPO_PUBLIC_SUPABASE_URL;
+
 export const supabase = createClient<Database>(
-  env.EXPO_PUBLIC_SUPABASE_URL,
+  supabaseUrl,
   env.EXPO_PUBLIC_SUPABASE_PUBLISHABLE_KEY,
   {
     // Sign-in (#5) adds saving the session on the device.
