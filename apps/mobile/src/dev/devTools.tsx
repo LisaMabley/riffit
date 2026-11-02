@@ -4,6 +4,7 @@ import { useCurrentUser } from '../lib/session';
 import { supabase, supabaseUrl } from '../lib/supabase';
 import { isLocalUrl } from './localUrl';
 import { SEED_PASSWORD, SEED_USERS, type SeedUser } from './seedUsers';
+import { signInErrorMessage } from './signInError';
 
 async function signInAsSeedUser({ email }: SeedUser) {
   if (!isLocalUrl(supabaseUrl)) {
@@ -12,7 +13,7 @@ async function signInAsSeedUser({ email }: SeedUser) {
   }
   const { error } = await supabase.auth.signInWithPassword({ email, password: SEED_PASSWORD });
   if (error) {
-    console.error(`Dev sign-in failed: ${error.message}. Has \`pnpm db:reset\` run?`);
+    console.error(signInErrorMessage(error, supabaseUrl));
   }
 }
 
