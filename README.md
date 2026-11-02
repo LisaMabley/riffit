@@ -67,6 +67,7 @@ The Profile tab shows `@maya` when the phone reaches the stack. If it doesn't, f
 | `pnpm db:start` / `pnpm db:stop` | Starts or stops local Supabase |
 | `pnpm db:reset` | Recreates the local database from migrations and the seed |
 | `pnpm test:db` | Runs all pgTAP tests (`supabase test db`) |
+| `pnpm db:gen-seed` | Regenerates `supabase/seed.sql` from `apps/mobile/src/dev/seedUsers.ts`, the one place the test users are defined |
 | `pnpm db:types` | Regenerates `packages/supabase/src/database.types.ts` from the local database |
 
 Running a single test:

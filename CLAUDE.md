@@ -33,6 +33,7 @@ pnpm format                                 # prettier (supabase/ and *.md are i
 pnpm db:start        # local Supabase stack (Studio URL etc. via `pnpm supabase status`)
 pnpm db:reset        # re-apply migrations + supabase/seed.sql
 pnpm test:db         # all pgTAP tests (supabase test db)
+pnpm db:gen-seed     # regenerate supabase/seed.sql after changing apps/mobile/src/dev/seedUsers.ts
 pnpm db:types        # regenerate packages/supabase/src/database.types.ts after changing a migration
 
 pnpm --filter @riffit/mobile start   # Expo dev server; scan the QR code with Expo Go
@@ -48,7 +49,7 @@ pnpm supabase test db supabase/tests/database/00010_profiles.test.sql
 
 - `supabase/migrations/`: the schema. This is where the product rules live (see below).
 - `supabase/tests/database/`: pgTAP, one file per area. Helpers: `tests.create_user`, `tests.create_profile`, `tests.authenticate_as(identifier)`, `tests.authenticate_as_anon`, `tests.authenticate_without_user`, `tests.as_superuser`. Test usernames must satisfy the 3–30 character rule.
-- `supabase/seed.sql`: local test users with a password that's public in this repo. **Never load it into a hosted project.** `supabase db push` skips it, but `supabase db reset --linked` runs it.
+- `supabase/seed.sql`: generated from `apps/mobile/src/dev/seedUsers.ts`, so edit that file instead. Local test users with a password that's public in this repo. **Never load it into a hosted project.** `supabase db push` skips it, but `supabase db reset --linked` runs it.
 - `apps/mobile`: the Expo app (React Native, Expo Router). Routes live in `src/app/`. Get the signed-in user from `useCurrentUser` in `src/lib/session.ts`. Everything in `src/dev/` must stay out of release builds, so only import it through `src/dev/index.ts`; `pnpm --filter @riffit/mobile check:release` (run in CI) fails if it leaks. Add Expo and React Native libraries with `npx expo install` from this folder, not `pnpm add`, so versions match the SDK.
 - `packages/core`: framework-free domain helpers and zod schemas (username, `isAdult`, limits) that mirror database rules for client-side feedback. **The database is the source of truth.** When a rule or limit changes, change the migration, `packages/core/src/limits.ts`, and both test suites together.
 - `packages/supabase`: generated `Database` types for the future app.
