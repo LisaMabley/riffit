@@ -34,7 +34,7 @@ export function DevUserSwitcher() {
       {SEED_USERS.map((seedUser) => (
         <Button
           key={seedUser.email}
-          title={seedUser.label}
+          title={seedUser.displayName}
           disabled={user?.email === seedUser.email}
           onPress={() => void signInAsSeedUser(seedUser)}
         />

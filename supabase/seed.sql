@@ -1,6 +1,6 @@
+-- Generated from apps/mobile/src/dev/seedUsers.ts by `pnpm db:gen-seed`. Don't edit by hand.
 -- Local development data. Runs after migrations on `supabase db reset`.
--- Three users who have completed onboarding. Dev builds sign in as them with the password below,
--- which also lives in apps/mobile/src/dev/seedUsers.ts.
+-- Users who have completed onboarding. Dev builds sign in as them with the password below.
 --
 -- This password is public. Never load this file into a hosted project.
 
