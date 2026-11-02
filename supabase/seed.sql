@@ -1,6 +1,8 @@
 -- Local development data. Runs after migrations on `supabase db reset`.
--- Three users who have completed onboarding. They have no auth identities yet, so they can't
--- sign in. That comes with the sign-in ticket.
+-- Three users who have completed onboarding. Dev builds sign in as them with the password below,
+-- which also lives in apps/mobile/src/dev/seedUsers.ts.
+--
+-- This password is public. Never load this file into a hosted project.
 
 insert into auth.users (
   id, instance_id, aud, role, email, encrypted_password, email_confirmed_at,
@@ -17,6 +19,17 @@ values
   ('00000000-0000-4000-8000-000000000003', '00000000-0000-0000-0000-000000000000',
    'authenticated', 'authenticated', 'sam@example.test', '', now(),
    '{"provider":"email","providers":["email"]}', '{}', now(), now(), '', '', '', '');
+
+update auth.users
+set encrypted_password = extensions.crypt('riffit-dev-only', extensions.gen_salt('bf', 10))
+where email like '%@example.test';
+
+insert into auth.identities (provider_id, user_id, identity_data, provider, created_at, updated_at)
+select
+  id::text, id, jsonb_build_object('sub', id::text, 'email', email, 'email_verified', true),
+  'email', now(), now()
+from auth.users
+where email like '%@example.test';
 
 insert into public.profiles (id, username, display_name, bio, age_confirmed_at)
 values
