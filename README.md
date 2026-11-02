@@ -39,7 +39,7 @@ pnpm test            # run the TypeScript tests
 
 `pnpm supabase status` prints the local URLs and keys, including Supabase Studio, a web UI for browsing tables and running SQL. Stop the stack with `pnpm db:stop`.
 
-The seed creates three users who have finished onboarding: `maya`, `jo.makes`, and `sam_k`. They can't sign in yet because sign-in isn't built.
+The seed creates three users who have finished onboarding: `maya`, `jo.makes`, and `sam_k`. Real sign-in isn't built yet, so dev builds sign in as `maya` at startup, and a switcher on the Profile tab changes to the others. They share a test password that's public in this repo, so never use it for anything real, and never load `supabase/seed.sql` into a hosted project.
 
 ### Running the app on a phone
 
@@ -53,7 +53,7 @@ The app talks to the local Supabase stack. On a phone, `localhost` and `127.0.0.
 
 Expo reads `.env` when it starts, so restart it after changing the file, and update the address if your router assigns a new one. A missing or invalid value stops the app with an error naming the variable.
 
-The Feed screen shows `Supabase: reached` with a status code when the phone gets an answer. It's a temporary check, and the 401 you'll see is expected: signed-out users can't read profiles. If it says `not reached`, check that the phone and computer are on the same network, that your firewall allows inbound connections on port 54321, and that Expo Go has Local Network permission in the iPhone's settings.
+The Profile tab shows `@maya` when the phone reaches the stack. If it doesn't, check that the phone and computer are on the same network, that your firewall allows inbound connections on port 54321, and that Expo Go has Local Network permission in the iPhone's settings. After `pnpm db:reset`, restart the app.
 
 ## Commands
 

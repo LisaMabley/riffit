@@ -48,7 +48,8 @@ pnpm supabase test db supabase/tests/database/00010_profiles.test.sql
 
 - `supabase/migrations/`: the schema. This is where the product rules live (see below).
 - `supabase/tests/database/`: pgTAP, one file per area. Helpers: `tests.create_user`, `tests.create_profile`, `tests.authenticate_as(identifier)`, `tests.authenticate_as_anon`, `tests.authenticate_without_user`, `tests.as_superuser`. Test usernames must satisfy the 3–30 character rule.
-- `apps/mobile`: the Expo app (React Native, Expo Router). Routes live in `src/app/`. Add Expo and React Native libraries with `npx expo install` from this folder, not `pnpm add`, so versions match the SDK.
+- `supabase/seed.sql`: local test users with a password that's public in this repo. **Never load it into a hosted project.** `supabase db push` skips it, but `supabase db reset --linked` runs it.
+- `apps/mobile`: the Expo app (React Native, Expo Router). Routes live in `src/app/`. Get the signed-in user from `useCurrentUser` in `src/lib/session.ts`. Everything in `src/dev/` must stay out of release builds, so only import it through `src/dev/index.ts`; `pnpm --filter @riffit/mobile check:release` (run in CI) fails if it leaks. Add Expo and React Native libraries with `npx expo install` from this folder, not `pnpm add`, so versions match the SDK.
 - `packages/core`: framework-free domain helpers and zod schemas (username, `isAdult`, limits) that mirror database rules for client-side feedback. **The database is the source of truth.** When a rule or limit changes, change the migration, `packages/core/src/limits.ts`, and both test suites together.
 - `packages/supabase`: generated `Database` types for the future app.
 - `packages/tsconfig`: shared strict tsconfig. TypeScript is pinned to 6.0 because typescript-eslint doesn't support 7 yet.
