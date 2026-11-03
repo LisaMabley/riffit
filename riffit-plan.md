@@ -124,7 +124,7 @@ _This is the full MVP. It's built in three phases; see section 17 for what comes
 - **Feed:** full width, natural height, cropped only at the bottom if taller than 2:3 portrait. Never forced square.
 - **Post view:** full image, never cropped.
 - **Location data (EXIF/GPS) is always stripped on the server.**
-- Accept HEIC. Resize to about 2048px on the long side and generate smaller versions for the feed.
+- Accept HEIC. The app converts each photo to a JPEG about 2048px on the long side before uploading. The server re-encodes it in sRGB, generates smaller versions for the feed, and rejects anything larger.
 - **Alt text:** prompted but optional ("Describe this look for people using screen readers"). Posts where every image has alt text show a "described" badge.
 - Images can't be swapped after posting.
 - No video in the MVP.
@@ -251,10 +251,11 @@ _Not legal advice. Have someone qualified review before the public launch._
 | 24-hour riff-link rule | Database |
 | Blocked-words check on tag creation | Database |
 | Block visibility | RLS |
-| Image processing (EXIF stripping, resizing, HEIC conversion) | Server: Supabase Edge Functions if feasible, otherwise a small Hono service on Node (e.g. Fly.io or Railway) |
+| HEIC conversion and resizing to about 2048px | App, before upload |
+| EXIF stripping, sRGB conversion, feed sizes | Supabase Edge Function |
 | Moderation actions, moderator email alerts, push (later) | Supabase Edge Functions or Hono |
 
-- **Early check:** confirm whether image processing runs reliably on Supabase Edge Functions (Deno has limited image libraries) before building the upload flow.
+- **Image processing check (#6):** Edge Functions allow 2 seconds of CPU time per request, and only WebAssembly image libraries run there. Decoding a 12MP iPhone HEIC takes 1.2–1.8 seconds on its own, so full-size photos can't be processed on the server. After the app resizes them, the server's work takes about half a second. The metadata stripping still happens on the server, so the privacy rule doesn't depend on the app. If hosted measurements don't confirm this, fall back to a small Hono service on Node (e.g. Fly.io or Railway). The web app (Phase 2) will need its own way to convert HEIC before upload.
 
 **Tag tables (sketch):**
 
