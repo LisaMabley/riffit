@@ -19,6 +19,9 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - run: pnpm format:check
       - run: pnpm turbo run typecheck lint test
+      # Edge Functions run on Deno, outside the Turbo packages.
+      - run: pnpm check:functions
+      - run: pnpm test:functions
       # Fails if the dev sign-in shortcut or test password reached a release bundle.
       - run: pnpm --filter @riffit/mobile check:release
 

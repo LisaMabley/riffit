@@ -6,7 +6,7 @@ Riffit (working name) is a fashion community built on **riffs**: someone posts a
 
 ## Status
 
-Phase 1 (invite-only friends beta) is in progress. So far: the database foundation for users (profiles and the 18+ check), RLS, and tests. The Expo app exists as a scaffold in `apps/mobile`. **Not started:** posts, images, and riffs; everything after that. Sign-in and onboarding come last in Phase 1 (§17, item 11). Until then, dev builds sign in as seeded test users: read the current user from the session, never from a hard-coded ID. Build phase by phase (§17), extending the schema with new migrations rather than modeling future phases up front. Check §4 "Out of scope" and §20 before adding anything.
+Phase 1 (invite-only friends beta) is in progress. So far: the database foundation for users (profiles and the 18+ check), RLS, and tests. The Expo app exists as a scaffold in `apps/mobile`. The `process-image` Edge Function strips and resizes photos, but nothing uploads to it yet. **Not started:** posts, image uploads, and riffs; everything after that. Sign-in and onboarding come last in Phase 1 (§17, item 11). Until then, dev builds sign in as seeded test users: read the current user from the session, never from a hard-coded ID. Build phase by phase (§17), extending the schema with new migrations rather than modeling future phases up front. Check §4 "Out of scope" and §20 before adding anything.
 
 ## Work in small chunks
 
@@ -35,6 +35,10 @@ pnpm db:reset        # re-apply migrations + supabase/seed.sql
 pnpm test:db         # all pgTAP tests (supabase test db)
 pnpm db:types        # regenerate packages/supabase/src/database.types.ts after changing a migration
 
+pnpm check:functions # deno fmt --check, lint, and check for supabase/functions
+pnpm test:functions  # Edge Function tests (deno test)
+pnpm supabase functions serve   # serve Edge Functions against the local stack
+
 pnpm --filter @riffit/mobile start   # Expo dev server; scan the QR code with Expo Go
 
 # single tests
@@ -49,8 +53,9 @@ pnpm supabase test db supabase/tests/database/00010_profiles.test.sql
 - `supabase/migrations/`: the schema. This is where the product rules live (see below).
 - `supabase/tests/database/`: pgTAP, one file per area. Helpers: `tests.create_user`, `tests.create_profile`, `tests.authenticate_as(identifier)`, `tests.authenticate_as_anon`, `tests.authenticate_without_user`, `tests.as_superuser`. Test usernames must satisfy the 3–30 character rule.
 - `supabase/seed.sql`: the local test users, the one place they're defined. Their emails must be `<username>@example.test`, and their password is public in this repo. **Never load it into a hosted project.** `supabase db push` skips it, but `supabase db reset --linked` runs it.
+- `supabase/functions/`: Edge Functions, on Deno. Dependencies and formatting live in `supabase/functions/deno.json`. Run Deno through the pnpm scripts, or pass `--config supabase/functions/deno.json`: without it, Deno treats the root `package.json` as its project and rewrites it. Tests live in `supabase/functions/tests/`, and their fixtures in `tests/fixtures/` (its README explains how they're made; never use photos with a real location).
 - `apps/mobile`: the Expo app (React Native, Expo Router). Routes live in `src/app/`. Get the signed-in user from `useCurrentUser` in `src/lib/session.ts`. Everything in `src/dev/` must stay out of release builds, so only import it through `src/dev/index.ts`; `pnpm --filter @riffit/mobile check:release` (run in CI) fails if it leaks. Add Expo and React Native libraries with `npx expo install` from this folder, not `pnpm add`, so versions match the SDK.
-- `packages/core`: framework-free domain helpers and zod schemas (username, `isAdult`, limits) that mirror database rules for client-side feedback. **The database is the source of truth.** When a rule or limit changes, change the migration, `packages/core/src/limits.ts`, and both test suites together.
+- `packages/core`: framework-free domain helpers and zod schemas (username, `isAdult`, limits) that mirror database rules for client-side feedback. **The database is the source of truth.** When a rule or limit changes, change the migration, `packages/core/src/limits.ts`, and both test suites together. `PHOTO_MAX_LONG_SIDE` is enforced by the `process-image` Edge Function, which imports `limits.ts` directly, so keep that file free of imports.
 - `packages/supabase`: generated `Database` types for the future app.
 - `packages/tsconfig`: shared strict tsconfig. TypeScript is pinned to 6.0 because typescript-eslint doesn't support 7 yet.
 

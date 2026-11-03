@@ -25,7 +25,7 @@ The full product and architecture spec is [riffit-plan.md](riffit-plan.md). Read
 - **pnpm 11.** The exact version is pinned in `packageManager` in [package.json](package.json). Running `corepack enable` picks it up automatically.
 - **Docker**, for the local Supabase stack. On Windows, Docker Desktop needs the WSL 2 backend.
 
-You don't need to install the Supabase CLI globally. It's a dev dependency, so run it as `pnpm supabase …`.
+You don't need to install the Supabase CLI or Deno globally. They're dev dependencies, so run them as `pnpm supabase …` and `pnpm exec deno …`.
 
 ### Setup
 
@@ -35,6 +35,7 @@ pnpm db:start        # start the local Supabase stack in Docker (first run downl
 pnpm db:reset        # apply migrations and load supabase/seed.sql
 pnpm test:db         # run the database tests
 pnpm test            # run the TypeScript tests
+pnpm test:functions  # run the Edge Function tests
 ```
 
 `pnpm supabase status` prints the local URLs and keys, including Supabase Studio, a web UI for browsing tables and running SQL. Stop the stack with `pnpm db:stop`.
@@ -68,6 +69,9 @@ The Profile tab shows `@maya` when the phone reaches the stack. If it doesn't, f
 | `pnpm db:reset` | Recreates the local database from migrations and the seed |
 | `pnpm test:db` | Runs all pgTAP tests (`supabase test db`) |
 | `pnpm db:types` | Regenerates `packages/supabase/src/database.types.ts` from the local database |
+| `pnpm check:functions` | Checks formatting, lint, and types in `supabase/functions` with Deno |
+| `pnpm test:functions` | Runs the Edge Function tests (`deno test`) |
+| `pnpm supabase functions serve` | Serves the Edge Functions against the local stack, at `http://127.0.0.1:54321/functions/v1/<name>` |
 
 Running a single test:
 
@@ -86,8 +90,9 @@ Read [CLAUDE.md](CLAUDE.md) before your first change. It's written for AI coding
 
 - **No birth dates.** The 18+ check compares the birth date and then discards it. Only `profiles.age_confirmed_at` is stored. Never store, return, or log a birth date. A schema guard test rejects any `birth` or `dob` column.
 - **Keep only what we use.** Don't collect personal data the product has no use for.
+- **No photo metadata.** The `process-image` Edge Function re-encodes every photo and removes all of its metadata, including location. Its tests check every output for anything left over.
 
-Upcoming features have more privacy rules of this kind: favorites never leak, private tags are readable only by the person who assigned them, blocks are enforced in RLS, and location data is stripped from photos. [CLAUDE.md](CLAUDE.md) and the spec list them all.
+Upcoming features have more privacy rules of this kind: favorites never leak, private tags are readable only by the person who assigned them, and blocks are enforced in RLS. [CLAUDE.md](CLAUDE.md) and the spec list them all.
 
 ## Product language
 
