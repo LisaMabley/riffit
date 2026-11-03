@@ -54,7 +54,7 @@ _This is the full MVP. It's built in three phases; see section 17 for what comes
 - Favorites (posts and profiles) and private applause
 - In-app notifications
 - Reporting and blocking, plus a minimal admin page
-- Mobile app (iOS and Android) and a web app (participation, no posting)
+- Mobile app (iOS and Android) and a web app with the same features
 
 **Later in the MVP, after the core works**
 
@@ -233,8 +233,8 @@ _Not legal advice. Have someone qualified review before the public launch._
 
 ## 15. Platforms
 
-- **Mobile (iOS and Android, through Expo):** everything, including posting and riffing. Mobile is built first.
-- **Web (Expo + React Native Web):** browse the feed and filters, view posts and riff chains, comment, favorite, applaud, tag (public tags on your own content, private tags on anything), report, and block. No posting or riffing on the web for now.
+- **Mobile (iOS and Android, through Expo):** built first.
+- **Web (Expo + React Native Web):** the same features as mobile, including posting and riffing.
 - **Sign-in (mobile and web):** email one-time code (no passwords), Sign in with Apple, and Google. Apple requires Sign in with Apple when other social sign-in is offered.
 
 ## 16. Technology and architecture
@@ -279,7 +279,7 @@ _Not legal advice. Have someone qualified review before the public launch._
 **When each comes in:**
 - **Phase 1:** pgTAP and Vitest from the start.
 - **Once the UI settles:** component tests, then the Maestro core-loop flow.
-- **Phase 2:** Playwright, when web participation is built.
+- **Phase 2:** Playwright, when the web app is built.
 
 ## 17. Build phases
 
@@ -298,7 +298,7 @@ This document describes the full MVP. **Build it in phases, not all at once.** E
 
 _Goal: test success milestones 1 and 2 with an invite-only group (TestFlight / Expo)._
 
-_Items run in this order, so the core loop gets built before sign-in. Until item 11, dev builds sign in as seeded test users, and RLS applies as it will for real users. Nobody outside development gets the app before item 11 is done._
+_Items run in this order, so the core loop gets built before sign-in. Until item 11, dev builds sign in as seeded test users, and RLS applies as it will for real users. Nobody outside development gets the app before item 11 is done. Before item 6, the app also starts running in a browser for local testing, so one person can act as two users at once. That version isn't deployed; the web app itself is Phase 2._
 
 1. Monorepo, Expo app, Supabase project, basic profiles, and dev-only sign-in as a seeded test user.
 2. **Early check:** image processing on Supabase Edge Functions (fall back to a small Hono/Node service if needed).
@@ -325,7 +325,7 @@ _Goal: make exploring and organizing rewarding; test milestones 3 and 4._
 5. Full in-app notifications, including batched applause and reply notifications.
 6. AI labels per image, the AI icon, and "Hide AI images" in onboarding.
 7. "Described" badge for posts with alt text.
-8. Web app with participation features (section 15).
+8. Web app with the same features as mobile (section 15).
 9. Tag promotion and merging, once there are enough tags to tidy.
 
 ### Phase 3 — Public launch
@@ -377,7 +377,6 @@ Possible later metrics, once there's a real user base: share of posts that are r
 - Server-saved drafts that sync across devices
 - Video
 - Multiple inspirations per riff
-- Posting and riffing on the web
 - External images and links, with clear attribution and copyright rules (especially for sources like Pinterest)
 - Saved named feeds ("My thrift people") and OR tag filters
 - Per-post controls for applause, comments, and riffing; private posts
