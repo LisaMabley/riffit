@@ -4,16 +4,11 @@ import { mkdtempSync, readdirSync, readFileSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
-import { SEED_PASSWORD, SEED_USERS } from '../src/dev/seedUsers.ts';
+import { SEED_EMAIL_DOMAIN, SEED_PASSWORD } from '../src/dev/seedCredentials.ts';
 
 // In the Profile screen. Proves the scan is reading the real app, not an empty bundle.
 const EXPECTED = 'Your profile will show up here.';
-const FORBIDDEN = [
-  SEED_PASSWORD,
-  ...SEED_USERS.map((user) => user.email),
-  'Dev sign-in',
-  'Dev: sign in as',
-];
+const FORBIDDEN = [SEED_PASSWORD, SEED_EMAIL_DOMAIN, 'Dev sign-in', 'Dev: sign in as'];
 
 const outputDir = mkdtempSync(join(tmpdir(), 'riffit-release-'));
 

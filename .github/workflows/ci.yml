@@ -21,9 +21,6 @@ jobs:
       - run: pnpm turbo run typecheck lint test
       # Fails if the dev sign-in shortcut or test password reached a release bundle.
       - run: pnpm --filter @riffit/mobile check:release
-      # Fails if the test users changed without regenerating the seed.
-      - run: pnpm db:gen-seed
-      - run: git diff --exit-code supabase/seed.sql
 
   database:
     runs-on: ubuntu-latest

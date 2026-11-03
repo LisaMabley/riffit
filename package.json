@@ -16,7 +16,6 @@
     "db:stop": "supabase stop",
     "db:reset": "supabase db reset",
     "test:db": "supabase test db",
-    "db:gen-seed": "node apps/mobile/scripts/generate-seed.mjs",
     "db:types": "supabase gen types typescript --local > packages/supabase/src/database.types.ts && prettier --write packages/supabase/src/database.types.ts"
   },
   "devDependencies": {

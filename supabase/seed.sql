@@ -1,6 +1,7 @@
--- Generated from apps/mobile/src/dev/seedUsers.ts by `pnpm db:gen-seed`. Don't edit by hand.
 -- Local development data. Runs after migrations on `supabase db reset`.
--- Users who have completed onboarding. Dev builds sign in as them with the password below.
+-- Users who have completed onboarding. To add one, add them to auth.users and public.profiles below.
+-- Dev builds sign in with `<username>@example.test` and this password (see
+-- apps/mobile/src/dev/seedCredentials.ts), and the switcher on the Profile tab lists them all.
 --
 -- This password is public. Never load this file into a hosted project.
 
@@ -14,10 +15,10 @@ values
    'authenticated', 'authenticated', 'maya@example.test', '', now(),
    '{"provider":"email","providers":["email"]}', '{}', now(), now(), '', '', '', ''),
   ('00000000-0000-4000-8000-000000000002', '00000000-0000-0000-0000-000000000000',
-   'authenticated', 'authenticated', 'jo@example.test', '', now(),
+   'authenticated', 'authenticated', 'jo.makes@example.test', '', now(),
    '{"provider":"email","providers":["email"]}', '{}', now(), now(), '', '', '', ''),
   ('00000000-0000-4000-8000-000000000003', '00000000-0000-0000-0000-000000000000',
-   'authenticated', 'authenticated', 'sam@example.test', '', now(),
+   'authenticated', 'authenticated', 'sam_k@example.test', '', now(),
    '{"provider":"email","providers":["email"]}', '{}', now(), now(), '', '', '', '');
 
 update auth.users
