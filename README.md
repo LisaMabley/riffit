@@ -40,7 +40,7 @@ pnpm test:functions  # run the Edge Function tests
 
 `pnpm supabase status` prints the local URLs and keys, including Supabase Studio, a web UI for browsing tables and running SQL. Stop the stack with `pnpm db:stop`.
 
-The seed creates three users who have finished onboarding: `maya`, `jo.makes`, and `sam_k`. Real sign-in isn't built yet, so dev builds sign in as `maya` at startup, and a switcher on the Profile tab changes to the others. To add a test user, add them to `supabase/seed.sql`, and they'll appear in the switcher after `pnpm db:reset`. They share a test password that's public in this repo, so never use it for anything real, and never load `supabase/seed.sql` into a hosted project.
+The seed creates three users who have finished onboarding: `maya`, `jo.makes`, and `sam_k`. Real sign-in isn't built yet, so dev builds sign in as `maya` at startup, and a switcher on the Profile tab changes to the others. To add a test user, add them to `supabase/seed.sql`, and they'll appear in the switcher after `pnpm db:reset`. They share a test password that's public in this repo, so never use it for anything real, and never load `supabase/seed.sql` into a hosted project. The seed refuses to run anywhere except the local stack.
 
 ### Running the app on a phone
 
