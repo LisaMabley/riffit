@@ -5,6 +5,8 @@
 -- Usage in a test:
 --   select tests.create_profile('maya');   -- as the default superuser, during setup
 --   select tests.create_user('maya');      -- a user without a profile
+--   select tests.create_image('maya');     -- an image of Maya's that isn't on a post yet
+--   select tests.create_post('maya', 2);   -- a post of Maya's with two images
 --   select tests.authenticate_as('maya');  -- act as Maya (role authenticated + JWT claims)
 --   select tests.authenticate_as_anon();   -- act as a signed-out visitor
 --   select tests.as_superuser();           -- back to the test runner's role
@@ -58,6 +60,40 @@ begin
   insert into public.profiles (id, username, display_name, age_confirmed_at)
   values (v_id, p_identifier, p_identifier, now());
   return v_id;
+end;
+$$;
+
+-- An image that isn't on a post yet, as process-image will leave it.
+create or replace function tests.create_image(p_identifier text)
+returns uuid
+language sql
+security definer
+set search_path = ''
+as $$
+  insert into public.post_images (owner_id, width, height)
+  values (tests.get_user_id(p_identifier), 1536, 2048)
+  returning id;
+$$;
+
+-- A post with p_image_count new images, inserted directly rather than through create_post().
+create or replace function tests.create_post(p_identifier text, p_image_count integer default 1)
+returns uuid
+language plpgsql
+security definer
+set search_path = ''
+as $$
+declare
+  v_post_id uuid;
+begin
+  insert into public.posts (author_id)
+  values (tests.get_user_id(p_identifier))
+  returning id into v_post_id;
+
+  insert into public.post_images (owner_id, post_id, position, width, height)
+  select tests.get_user_id(p_identifier), v_post_id, i, 1536, 2048
+  from generate_series(0, p_image_count - 1) as i;
+
+  return v_post_id;
 end;
 $$;
 
