@@ -3,6 +3,7 @@ import {
   ColorProfile,
   ErrorMetric,
   ImageMagick,
+  MagickColor,
   MagickColors,
   MagickFormat,
   MagickGeometry,
@@ -87,6 +88,21 @@ function makeJpeg(width: number, height: number): Uint8Array {
   );
 }
 
+// Horizontal 1px black and white stripes, like a fine fabric weave.
+function makeStripedJpeg(width: number, height: number): Uint8Array {
+  const header = new TextEncoder().encode(`P5\n${width} ${height}\n255\n`);
+  const pgm = new Uint8Array(header.length + width * height);
+  pgm.set(header);
+  for (let y = 0; y < height; y += 2) {
+    pgm.fill(255, header.length + y * width, header.length + (y + 1) * width);
+  }
+  return ImageMagick.read(
+    pgm,
+    MagickFormat.Pgm,
+    (image) => image.write(MagickFormat.Jpeg, (data) => data.slice()),
+  );
+}
+
 // How different two images look, from 0 (identical) up.
 function difference(a: Uint8Array, b: Uint8Array): number {
   const imageA = MagickImage.create(a);
@@ -152,6 +168,38 @@ Deno.test('converts Display P3 colors to sRGB', async () => {
 Deno.test('never enlarges a small photo', async () => {
   const versions = await processImage(makeJpeg(600, 400));
   assertEquals(sizes(versions), ['full 600x400', 'feed-1024 600x400', 'feed-512 512x341']);
+});
+
+Deno.test('keeps the proportions of tightly cropped photos', async () => {
+  // Mirror selfies cropped close to the body: tall, narrow, and often under the size limit.
+  assertEquals(sizes(await processImage(makeJpeg(900, 2048))), [
+    'full 900x2048',
+    'feed-1024 450x1024',
+    'feed-512 225x512',
+  ]);
+  assertEquals(sizes(await processImage(makeJpeg(1200, 1800))), [
+    'full 1200x1800',
+    'feed-1024 683x1024',
+    'feed-512 342x512',
+  ]);
+  assertEquals(sizes(await processImage(makeJpeg(640, 1700))), [
+    'full 640x1700',
+    'feed-1024 386x1024',
+    'feed-512 193x512',
+  ]);
+});
+
+Deno.test('keeps fine patterns smooth when a cropped photo shrinks unevenly', async () => {
+  // Shrunk well, 1px stripes blend into an even grey. A box filter at an uneven ratio (here 1800
+  // to 1024) leaves visible bands instead.
+  const [, feed] = await processImage(makeStripedJpeg(1200, 1800));
+  const grey = ImageMagick.read(
+    new MagickColor('#808080'),
+    feed.width,
+    feed.height,
+    (image) => image.write(MagickFormat.Jpeg, (data) => data.slice()),
+  );
+  assertLess(difference(feed.data, grey), 0.05);
 });
 
 Deno.test('rejects photos larger than the limit', async () => {

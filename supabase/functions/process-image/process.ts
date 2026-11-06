@@ -94,14 +94,12 @@ export async function processImage(input: Uint8Array): Promise<ImageVersion[]> {
     image.transformColorSpace(new ColorProfile(srgbProfile), ColorTransformMode.Quantum);
     image.strip();
     image.quality = QUALITY;
-    // Each feed size halves the one before, and for halving, a box filter (averaging 2x2 blocks)
-    // looks as good as the default Lanczos at a third of the CPU time.
-    image.filterType = FilterType.Box;
 
     const versions: ImageVersion[] = [encode(image, 'full')];
     for (const size of FEED_SIZES) {
       const geometry = new MagickGeometry(size, size);
       geometry.greater = true; // Only shrink, never enlarge.
+      image.filterType = resizeFilter(Math.max(image.width, image.height), size);
       image.resize(geometry);
       versions.push(encode(image, `feed-${size}`));
     }
@@ -109,6 +107,14 @@ export async function processImage(input: Uint8Array): Promise<ImageVersion[]> {
   } finally {
     image.dispose();
   }
+}
+
+// A full 2048px photo halves exactly at each feed size, and for halving, a box filter (averaging
+// 2x2 blocks) looks as good as the default Lanczos at a third of the CPU time. Cropped photos are
+// often smaller, and at uneven ratios a box filter turns fine patterns like fabric into stripes,
+// so those use a triangle filter.
+function resizeFilter(longSide: number, size: number): FilterType {
+  return longSide === size * 2 ? FilterType.Box : FilterType.Triangle;
 }
 
 function encode(image: IMagickImage, name: ImageVersion['name']): ImageVersion {
