@@ -5,6 +5,18 @@
 --
 -- This password is public. Never load this file into a hosted project.
 
+-- Runs only on the local stack, so `supabase db reset --linked` can't load it into a hosted
+-- project. Local databases carry the Supabase CLI's public development JWT secret, which a hosted
+-- project never has. The CLI sends this file as one batch, so the exception stops all of it.
+do $$
+begin
+  if current_setting('app.settings.jwt_secret', true) is distinct from
+    'super-secret-jwt-token-with-at-least-32-characters-long' then
+    raise exception 'seed.sql only runs on the local Supabase stack: its test users have a public password';
+  end if;
+end
+$$;
+
 insert into auth.users (
   id, instance_id, aud, role, email, encrypted_password, email_confirmed_at,
   raw_app_meta_data, raw_user_meta_data, created_at, updated_at,

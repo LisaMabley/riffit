@@ -6,6 +6,8 @@ packages:
 # pnpm's default isolated layout.
 nodeLinker: hoisted
 
-# The Supabase CLI package downloads its binary in a postinstall script.
-onlyBuiltDependencies:
-  - supabase
+# Install scripts that may run. The Supabase CLI package downloads its binary in one, and Deno's
+# links the binary for this platform.
+allowBuilds:
+  deno: true
+  supabase: true
