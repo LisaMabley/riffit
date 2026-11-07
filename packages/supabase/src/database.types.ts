@@ -172,6 +172,22 @@ export type Database = {
           isSetofReturn: false;
         };
       };
+      create_post: {
+        Args: { p_body: string; p_images: Json };
+        Returns: {
+          author_id: string;
+          body: string | null;
+          created_at: string;
+          id: string;
+          updated_at: string;
+        };
+        SetofOptions: {
+          from: '*';
+          to: 'posts';
+          isOneToOne: true;
+          isSetofReturn: false;
+        };
+      };
     };
     Enums: {
       [_ in never]: never;
