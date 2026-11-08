@@ -23,6 +23,88 @@ export type Database = {
   };
   public: {
     Tables: {
+      post_images: {
+        Row: {
+          alt_text: string | null;
+          created_at: string;
+          height: number;
+          id: string;
+          owner_id: string;
+          position: number | null;
+          post_id: string | null;
+          width: number;
+        };
+        ComputedFields: never;
+        Insert: {
+          alt_text?: string | null;
+          created_at?: string;
+          height: number;
+          id?: string;
+          owner_id: string;
+          position?: number | null;
+          post_id?: string | null;
+          width: number;
+        };
+        Update: {
+          alt_text?: string | null;
+          created_at?: string;
+          height?: number;
+          id?: string;
+          owner_id?: string;
+          position?: number | null;
+          post_id?: string | null;
+          width?: number;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'post_images_owner_id_fkey';
+            columns: ['owner_id'];
+            isOneToOne: false;
+            referencedRelation: 'profiles';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'post_images_post_fkey';
+            columns: ['post_id', 'owner_id'];
+            isOneToOne: false;
+            referencedRelation: 'posts';
+            referencedColumns: ['id', 'author_id'];
+          },
+        ];
+      };
+      posts: {
+        Row: {
+          author_id: string;
+          body: string | null;
+          created_at: string;
+          id: string;
+          updated_at: string;
+        };
+        ComputedFields: never;
+        Insert: {
+          author_id: string;
+          body?: string | null;
+          created_at?: string;
+          id?: string;
+          updated_at?: string;
+        };
+        Update: {
+          author_id?: string;
+          body?: string | null;
+          created_at?: string;
+          id?: string;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'posts_author_id_fkey';
+            columns: ['author_id'];
+            isOneToOne: false;
+            referencedRelation: 'profiles';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
       profiles: {
         Row: {
           age_confirmed_at: string;
