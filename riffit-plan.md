@@ -125,6 +125,7 @@ _This is the full MVP. It's built in three phases; see section 17 for what comes
 - **Post view:** full image, never cropped.
 - **Location data (EXIF/GPS) is always stripped on the server.**
 - Accept HEIC. The app converts each photo to a JPEG about 2048px on the long side before uploading. The server re-encodes it in sRGB, generates smaller versions for the feed, and rejects anything larger.
+- Each photo uploads as soon as it's picked, so posting doesn't wait on uploads. Photos picked for a post that's never finished are cleaned up later (#45).
 - **Alt text:** prompted but optional ("Describe this look for people using screen readers"). Posts where every image has alt text show a "described" badge.
 - Images can't be swapped after posting.
 - No video in the MVP.
