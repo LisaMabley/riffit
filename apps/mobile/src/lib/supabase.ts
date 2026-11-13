@@ -10,12 +10,9 @@ const env = parseEnv({
 });
 
 export const supabaseUrl = env.EXPO_PUBLIC_SUPABASE_URL;
+export const supabasePublishableKey = env.EXPO_PUBLIC_SUPABASE_PUBLISHABLE_KEY;
 
-export const supabase = createClient<Database>(
-  supabaseUrl,
-  env.EXPO_PUBLIC_SUPABASE_PUBLISHABLE_KEY,
-  {
-    // Sign-in (#5) adds saving the session on the device.
-    auth: { persistSession: false, autoRefreshToken: false, detectSessionInUrl: false },
-  },
-);
+export const supabase = createClient<Database>(supabaseUrl, supabasePublishableKey, {
+  // Sign-in (#5) adds saving the session on the device.
+  auth: { persistSession: false, autoRefreshToken: false, detectSessionInUrl: false },
+});
