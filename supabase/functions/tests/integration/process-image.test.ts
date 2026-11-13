@@ -45,22 +45,38 @@ function upload(body: Uint8Array<ArrayBuffer>, token?: string) {
   });
 }
 
-// Everything a test might have saved, so the denied cases can check that nothing was.
-async function savedState() {
-  const { count, error } = await admin
-    .from('post_images')
-    .select('*', { count: 'exact', head: true });
-  if (error) throw error;
-  const { data: folders, error: listError } = await admin.storage.from(BUCKET).list(maya.id);
-  if (listError) throw listError;
-  return { rows: count, imageFolders: folders.length };
+// Uploads the photo as maya, runs the checks on the saved image, and always removes it after.
+async function withSavedImage(check: (id: string) => Promise<void>) {
+  const response = await upload(photo, maya.token);
+  assertEquals(response.status, 201);
+  const { id } = await response.json();
+  assertExists(id);
+
+  try {
+    await check(id);
+  } finally {
+    await admin.from('post_images').delete().eq('id', id);
+    await admin.storage.from(BUCKET).remove(
+      VERSION_NAMES.map((name) => versionPath(maya.id, id, name)),
+    );
+  }
 }
 
-async function removeImage(ownerId: string, id: string) {
-  await admin.from('post_images').delete().eq('id', id);
-  await admin.storage.from(BUCKET).remove(
-    VERSION_NAMES.map((name) => versionPath(ownerId, id, name)),
-  );
+// Fails if the action left any new image row, or any new image folder for maya.
+async function assertSavesNothing(action: () => Promise<void>) {
+  const savedState = async () => {
+    const { count, error } = await admin
+      .from('post_images')
+      .select('*', { count: 'exact', head: true });
+    if (error) throw error;
+    const { data: folders, error: listError } = await admin.storage.from(BUCKET).list(maya.id);
+    if (listError) throw listError;
+    return { rows: count, imageFolders: folders.length };
+  };
+
+  const before = await savedState();
+  await action();
+  assertEquals(await savedState(), before);
 }
 
 async function canDownload(client: SupabaseClient<Database>, path: string) {
@@ -68,13 +84,8 @@ async function canDownload(client: SupabaseClient<Database>, path: string) {
   return data !== null;
 }
 
-Deno.test('a signed-in upload saves three versions and an unattached image row', async () => {
-  const response = await upload(photo, maya.token);
-  assertEquals(response.status, 201);
-  const { id } = await response.json();
-  assertExists(id);
-
-  try {
+Deno.test('a signed-in upload saves three versions and an unattached image row', () =>
+  withSavedImage(async (id) => {
     const { data: row, error } = await maya.client
       .from('post_images')
       .select('owner_id, post_id, position, width, height')
@@ -101,54 +112,40 @@ Deno.test('a signed-in upload saves three versions and an unattached image row',
     for (const name of VERSION_NAMES) {
       assert(await canDownload(maya.client, versionPath(maya.id, id, name)), name);
     }
-  } finally {
-    await removeImage(maya.id, id);
-  }
-});
+  }));
 
-Deno.test("another user can't read an unattached image", async () => {
-  const response = await upload(photo, maya.token);
-  assertEquals(response.status, 201);
-  const { id } = await response.json();
-
-  try {
+Deno.test("another user can't read an unattached image", () =>
+  withSavedImage(async (id) => {
     const { data: rows, error } = await jo.client.from('post_images').select('id').eq('id', id);
     if (error) throw error;
     assertEquals(rows, []);
     for (const name of VERSION_NAMES) {
       assert(!(await canDownload(jo.client, versionPath(maya.id, id, name))), name);
     }
-  } finally {
-    await removeImage(maya.id, id);
-  }
-});
+  }));
 
-Deno.test('signed-out uploads are refused and save nothing', async (t) => {
-  const before = await savedState();
+Deno.test('signed-out uploads are refused and save nothing', (t) =>
+  assertSavesNothing(async () => {
+    await t.step('with no token', async () => {
+      const response = await upload(photo);
+      await response.body?.cancel();
+      assertEquals(response.status, 401);
+    });
 
-  await t.step('with no token', async () => {
-    const response = await upload(photo);
-    await response.body?.cancel();
-    assertEquals(response.status, 401);
-  });
+    // The anon key passes the gateway's JWT check, so the function itself has to refuse it.
+    await t.step('with the anon key', async () => {
+      const response = await upload(photo, anonKey);
+      assertEquals(response.status, 401);
+      assertEquals(await response.json(), { error: 'not-signed-in' });
+    });
+  }));
 
-  // The anon key passes the gateway's JWT check, so the function itself has to refuse it.
-  await t.step('with the anon key', async () => {
-    const response = await upload(photo, anonKey);
-    assertEquals(response.status, 401);
-    assertEquals(await response.json(), { error: 'not-signed-in' });
-  });
-
-  assertEquals(await savedState(), before);
-});
-
-Deno.test('a rejected photo saves nothing', async () => {
-  const before = await savedState();
-  const response = await upload(new TextEncoder().encode('not a photo'), maya.token);
-  assertEquals(response.status, 422);
-  assertEquals(await response.json(), { error: 'not-jpeg' });
-  assertEquals(await savedState(), before);
-});
+Deno.test('a rejected photo saves nothing', () =>
+  assertSavesNothing(async () => {
+    const response = await upload(new TextEncoder().encode('not a photo'), maya.token);
+    assertEquals(response.status, 422);
+    assertEquals(await response.json(), { error: 'not-jpeg' });
+  }));
 
 Deno.test("a user who hasn't finished onboarding is refused", async () => {
   const email = 'no-profile@example.test';
@@ -160,12 +157,12 @@ Deno.test("a user who hasn't finished onboarding is refused", async () => {
   if (error) throw error;
 
   try {
-    const before = await savedState();
     const { token } = await signIn(email);
-    const response = await upload(photo, token);
-    assertEquals(response.status, 403);
-    assertEquals(await response.json(), { error: 'no-profile' });
-    assertEquals(await savedState(), before);
+    await assertSavesNothing(async () => {
+      const response = await upload(photo, token);
+      assertEquals(response.status, 403);
+      assertEquals(await response.json(), { error: 'no-profile' });
+    });
   } finally {
     await admin.auth.admin.deleteUser(data.user.id);
   }
