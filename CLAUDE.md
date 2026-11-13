@@ -38,6 +38,7 @@ pnpm db:types        # regenerate packages/supabase/src/database.types.ts after 
 pnpm check:functions # deno fmt --check, lint, and check for supabase/functions
 pnpm test:functions  # Edge Function tests (deno test)
 pnpm supabase functions serve   # serve Edge Functions against the local stack
+pnpm test:functions:integration # call the served functions (needs the stack, a fresh db:reset, and serve)
 
 pnpm --filter @riffit/mobile start   # Expo dev server; scan the QR code with Expo Go
 
