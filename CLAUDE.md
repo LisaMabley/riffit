@@ -79,6 +79,18 @@ pnpm supabase test db supabase/tests/database/00010_profiles.test.sql
 - Favorites never leak: no notification, count, or list, and no effect on ranking.
 - Blocks are bidirectional and enforced in RLS.
 
+## Readability first
+
+Code is read far more often than it's written, and Lisa reviews every line. When readability and brevity pull in different directions, choose readability, in every language here (TypeScript, SQL, Deno).
+
+- **Clear over clever.** Skip one-liners, chained ternaries, dense `reduce` calls, and terse regexes when a few plain statements say the same thing more clearly.
+- **Descriptive names.** Name variables, functions, and SQL aliases for what they hold or do (`profile`, not `p`; `isAdult`, not `ok`). Short names are fine only for tiny, conventional scopes such as loop indexes.
+- **Name intermediate steps.** Pull complex conditions and expressions into well-named variables or small functions instead of nesting them inline.
+- **Explicit over implicit.** Prefer early returns and straightforward `if` blocks over clever control flow, and explicit types at module boundaries.
+- **Comments explain why.** Explain the reason behind non-obvious choices, especially in migrations and RLS policies. Don't narrate what the code already says.
+- **Repetition is sometimes fine.** Don't build an abstraction just to save a few lines. Extract shared code only when it makes the code easier to follow.
+- **Not a reason to pad.** Readable doesn't mean verbose. Remove dead code, needless wrappers, and redundant comments.
+
 ## Product language
 
 - "Riff" everywhere (`Riff on this`, `12 riffs`, `riffed from @maya`).
