@@ -378,7 +378,11 @@ enabled = true
 # Supported request policies: `oneshot`, `per_worker`.
 # `per_worker` (default) — enables hot reload during local development.
 # `oneshot` — fallback mode if hot reload causes issues (e.g. in large repos or with symlinks).
-policy = "per_worker"
+# Riffit uses `oneshot`: under `per_worker`, process-image's CPU time adds up across requests until
+# the runtime retires the worker, and requests that arrive meanwhile fail with a 502. `oneshot`
+# gives each request a fresh worker and its own CPU budget, like the hosted platform, and still
+# picks up code changes on the next request.
+policy = "oneshot"
 # Port to attach the Chrome inspector for debugging edge functions.
 inspector_port = 8083
 # The Deno major version to use.
