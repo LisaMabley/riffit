@@ -98,5 +98,5 @@ Code is read far more often than it's written, and Lisa reviews every line. When
 - Applause has no public count.
 - The riff count is the one public number, hidden at zero.
 - Placeholder and moderation copy stays vague ("Original not available," never "removed for violating rules").
-- User-facing copy follows the voice in [docs/voice-and-community.md](docs/voice-and-community.md), which also holds draft copy.
+- User-facing copy follows the voice in [docs/voice-and-community.md](docs/voice-and-community.md), which also holds draft copy. In the app, it lives in `apps/mobile/src/copy.ts`, not inline in screens, so it's easy to reword and later translate.
 - When unsure whether a feature belongs, apply the guiding question in spec §22.
