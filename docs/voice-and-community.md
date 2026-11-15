@@ -14,7 +14,9 @@ Everything here is proposed direction and draft copy, not final. Scope and rules
 
 The app should feel like a smart, funny, generous person at a creative gathering: welcoming, enthusiastic, a little irreverent, and never preachy, saccharine, or patronizing.
 
-**The voice is:** warm, generous, funny, inventive, inclusive, slightly irreverent, and occasionally surprising.
+**The voice is:** lighthearted, warm, generous, funny, inventive, inclusive, slightly irreverent, and occasionally surprising.
+
+Humor is the default, not an occasional garnish. Fashion is play, and the app should sound like it's having fun. When two lines are equally clear, choose the lighter, funnier one. Clarity still comes first when someone needs to act, as in errors, permissions, and safety. Even there, keep the tone easygoing, never stiff.
 
 **Avoid:**
 
