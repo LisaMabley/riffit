@@ -1,6 +1,6 @@
 # Riffit — Voice and Community
 
-_Updated 2026-10-31_
+_Updated 2026-11-14_
 
 How Riffit sounds, and how its interface cultivates a kind, supportive, inclusive, and creatively adventurous community. These values should show up throughout the experience, not just during onboarding.
 
@@ -114,6 +114,37 @@ A tone check before posting is planned for later (plan §20). When a comment app
 Avoid patronizing language such as "Would you say this to your best friend?" or anything that sounds like a parent or teacher correcting a child.
 
 Gentle nudges are not a substitute for moderation (plan §13). The goal is not to assume people will behave badly, but to encourage their better instincts while staying prepared for abuse.
+
+## Adding photos to a post
+
+Picking photos is the first step of posting, so it should feel quick and light. Photos start uploading the moment they're picked (plan §9), and each one shows its own progress. Errors say what happened and what to do next, without blame and without technical detail.
+
+**Picker:**
+
+- Button: "Add photos"
+- When the post already has six: "That's six. Plenty of look to work with."
+- Photo library permission (only where the system asks, such as Android or a future camera option): "Riffit uses your photos only when you pick them for a post."
+
+**Per-photo states** (shown on each preview, and read out by screen readers):
+
+- Preparing: "Getting it ready…"
+- Uploading: "Uploading…"
+- Done: no label, just the photo. Screen readers hear "Photo 2 of 4, ready."
+- Failed: a short reason below, with a "Try again" button.
+- Every photo has a small × in the corner to remove it. Screen readers hear "Remove photo 2."
+
+**Failure reasons:**
+
+| What went wrong | Copy |
+| --- | --- |
+| The photo couldn't be opened or converted on the phone | "This photo wouldn't open. Try a different one?" |
+| No connection, or the request timed out | "Couldn't reach Riffit. Check your connection and try again." |
+| Signed out, or the session expired | "You've been signed out. Sign in again to keep going." |
+| Signed in, but onboarding isn't finished | "Finish setting up your profile, then come back to this." |
+| The server rejected the file (too large, not a JPEG, or corrupt) | "This photo didn't make it through. Try a different one?" |
+| Anything else, such as a server error | "Something went sideways on our end. Try again in a bit." |
+
+The server's three rejections share one message because each one means "this file" and the fix is the same. The specific reason goes to the logs, not the screen.
 
 ## Product mechanics
 
