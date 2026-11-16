@@ -1,6 +1,6 @@
 # Riffit — Voice and Community
 
-_Updated 2026-11-14_
+_Updated 2026-11-16_
 
 How Riffit sounds, and how its interface cultivates a kind, supportive, inclusive, and creatively adventurous community. These values should show up throughout the experience, not just during onboarding.
 
@@ -147,6 +147,16 @@ Picking photos is the first step of posting, so it should feel quick and light. 
 | Anything else, such as a server error | "Something went sideways on our end. Try again in a bit." |
 
 The server's three rejections share one message because each one means "this file" and the fix is the same. The specific reason goes to the logs, not the screen.
+
+**Ordering photos:**
+
+The first photo is the one the feed shows (plan §9), so the copy calls it the cover, like a magazine's.
+
+- Photo 1 carries a small "Cover" label. Screen readers hear "Photo 1 of 4, cover, ready."
+- Below the photos, once there are two or more: "The first photo is your cover. It's the one the feed sees first."
+- Each photo has arrow buttons to move it. Screen readers hear "Move photo 2 earlier" and "Move photo 2 later." Photo 1 has no "earlier" button, and the last photo has no "later" button.
+- In VoiceOver's actions on the photo itself: "Move earlier" and "Move later."
+- After a move, screen readers hear where the photo landed: "Now photo 1 of 4."
 
 ## Product mechanics
 
