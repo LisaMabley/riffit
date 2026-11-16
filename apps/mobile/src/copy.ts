@@ -29,11 +29,33 @@ export const newPostCopy = {
   tryAgain: 'Try again',
   photoFailures,
 
-  // For screen readers, e.g. "Photo 2 of 4, ready".
+  // The first photo is the one the feed shows (spec §9).
+  cover: 'Cover',
+  coverHint: "The first photo is your cover. It's the one the feed sees first.",
+
+  // For screen readers, e.g. "Photo 2 of 4, ready" or "Photo 1 of 4, cover, ready".
   photoLabel(position: number, total: number, status: string): string {
+    if (position === 1) {
+      return `Photo 1 of ${total}, cover, ${status}`;
+    }
     return `Photo ${position} of ${total}, ${status}`;
   },
   removePhoto(position: number): string {
     return `Remove photo ${position}`;
+  },
+
+  // Labels for the arrow buttons, which screen readers read without the photo in context.
+  movePhotoEarlier(position: number): string {
+    return `Move photo ${position} earlier`;
+  },
+  movePhotoLater(position: number): string {
+    return `Move photo ${position} later`;
+  },
+  // VoiceOver actions on the photo itself, where the photo is already in context.
+  moveEarlierAction: 'Move earlier',
+  moveLaterAction: 'Move later',
+  // Announced after a move.
+  movedTo(position: number, total: number): string {
+    return `Now photo ${position} of ${total}`;
   },
 };
