@@ -1,7 +1,12 @@
 import { POST_IMAGES_MAX } from '@riffit/core';
 import { describe, expect, it } from 'vitest';
 
-import { type PickedPhoto, pickedPhotosReducer, remainingPhotoSlots } from './pickedPhotos';
+import {
+  type MoveDirection,
+  type PickedPhoto,
+  pickedPhotosReducer,
+  remainingPhotoSlots,
+} from './pickedPhotos';
 
 function preparingPhoto(key: string): PickedPhoto {
   return { key, sourceUri: `file:///picked/${key}.heic`, status: { kind: 'preparing' } };
@@ -45,6 +50,35 @@ describe('pickedPhotosReducer', () => {
     });
 
     expect(photos).toEqual([]);
+  });
+
+  describe('moving a photo', () => {
+    const existing = [preparingPhoto('a'), preparingPhoto('b'), preparingPhoto('c')];
+
+    function keysAfterMove(key: string, direction: MoveDirection): string[] {
+      const photos = pickedPhotosReducer(existing, { type: 'moved', key, direction });
+      return photos.map((photo) => photo.key);
+    }
+
+    it('swaps a photo with the one before it', () => {
+      expect(keysAfterMove('b', 'earlier')).toEqual(['b', 'a', 'c']);
+    });
+
+    it('swaps a photo with the one after it', () => {
+      expect(keysAfterMove('b', 'later')).toEqual(['a', 'c', 'b']);
+    });
+
+    it('leaves the first photo in place when it moves earlier', () => {
+      expect(keysAfterMove('a', 'earlier')).toEqual(['a', 'b', 'c']);
+    });
+
+    it('leaves the last photo in place when it moves later', () => {
+      expect(keysAfterMove('c', 'later')).toEqual(['a', 'b', 'c']);
+    });
+
+    it('ignores a move for a photo that was removed', () => {
+      expect(keysAfterMove('removed', 'earlier')).toEqual(['a', 'b', 'c']);
+    });
   });
 });
 

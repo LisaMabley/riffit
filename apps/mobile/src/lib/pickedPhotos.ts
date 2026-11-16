@@ -23,7 +23,11 @@ export type PickedPhoto = {
 export type PickedPhotosAction =
   | { type: 'added'; photos: PickedPhoto[] }
   | { type: 'statusChanged'; key: string; status: PhotoStatus }
-  | { type: 'removed'; key: string };
+  | { type: 'removed'; key: string }
+  | { type: 'moved'; key: string; direction: MoveDirection };
+
+// Earlier is toward the cover, the first photo, which the feed shows (spec §9).
+export type MoveDirection = 'earlier' | 'later';
 
 export function pickedPhotosReducer(
   photos: PickedPhoto[],
@@ -45,7 +49,33 @@ export function pickedPhotosReducer(
 
     case 'removed':
       return photos.filter((photo) => photo.key !== action.key);
+
+    case 'moved':
+      return movePhoto(photos, action.key, action.direction);
   }
+}
+
+// Swaps a photo with its neighbor. Moving the first photo earlier or the last one later changes
+// nothing, and neither does moving a photo that was removed.
+function movePhoto(photos: PickedPhoto[], key: string, direction: MoveDirection): PickedPhoto[] {
+  const movingIndex = photos.findIndex((photo) => photo.key === key);
+  const neighborIndex = direction === 'earlier' ? movingIndex - 1 : movingIndex + 1;
+
+  const moving = photos[movingIndex];
+  const neighbor = photos[neighborIndex];
+  if (moving === undefined || neighbor === undefined) {
+    return photos;
+  }
+
+  return photos.map((photo, index) => {
+    if (index === movingIndex) {
+      return neighbor;
+    }
+    if (index === neighborIndex) {
+      return moving;
+    }
+    return photo;
+  });
 }
 
 export function remainingPhotoSlots(photos: PickedPhoto[]): number {
