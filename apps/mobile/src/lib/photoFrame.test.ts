@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 
 import { layoutFullHeight } from './photoFrame';
 
-// A 3:5 frame, the shape of the New post tiles.
+// A 3:5 frame. The math doesn't depend on the shape the app uses.
 const frame = { width: 120, height: 200 };
 
 describe('layoutFullHeight', () => {

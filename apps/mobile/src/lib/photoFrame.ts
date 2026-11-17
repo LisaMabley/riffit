@@ -1,8 +1,9 @@
 import type { PhotoSize } from './photoSize';
 
 // Photo previews share one tall frame, width to height, so a look always shows head to shoes.
-// Trying 3:5 for now. The feed's shape is still open, and the post view never crops (spec §9).
-export const PHOTO_FRAME_ASPECT = 3 / 5;
+// Trying 9:16 for now: at 3:5, outfit photos from the web still came out narrower than the frame.
+// The feed's shape is still open (#63), and the post view never crops (spec §9).
+export const PHOTO_FRAME_ASPECT = 9 / 16;
 
 export type FramedPhotoLayout = {
   width: number;
