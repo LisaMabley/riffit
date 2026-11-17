@@ -170,8 +170,9 @@ const styles = StyleSheet.create({
   tile: {
     borderRadius: 8,
     overflow: 'hidden',
-    // Dark, so the white buttons still show where a narrow photo leaves bars at the sides.
-    backgroundColor: '#222',
+    // A gray at 30% lightness: softer than black, and still dark enough for the white buttons to
+    // show where a narrow photo leaves bars at the sides.
+    backgroundColor: '#4d4d4d',
   },
   photo: {
     position: 'absolute',
