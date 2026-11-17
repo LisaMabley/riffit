@@ -52,6 +52,12 @@ describe('pickedPhotosReducer', () => {
     expect(photos).toEqual([]);
   });
 
+  it('clears every photo', () => {
+    const existing = [preparingPhoto('a'), preparingPhoto('b')];
+
+    expect(pickedPhotosReducer(existing, { type: 'cleared' })).toEqual([]);
+  });
+
   describe('moving a photo', () => {
     const existing = [preparingPhoto('a'), preparingPhoto('b'), preparingPhoto('c')];
 

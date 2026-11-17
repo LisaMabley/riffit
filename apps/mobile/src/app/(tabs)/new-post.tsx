@@ -1,17 +1,25 @@
 import * as ImagePicker from 'expo-image-picker';
-import { type Dispatch, useReducer, useRef } from 'react';
+import { type Dispatch, useReducer, useRef, useState } from 'react';
 import {
   AccessibilityInfo,
   Pressable,
   ScrollView,
   StyleSheet,
   Text,
+  TextInput,
   useWindowDimensions,
   View,
 } from 'react-native';
 
 import { PhotoTile } from '../../components/PhotoTile';
 import { newPostCopy } from '../../copy';
+import {
+  type BodyCount,
+  describeBodyCount,
+  uploadedImageIds,
+  whyPostIsBlocked,
+} from '../../lib/composePost';
+import { createPost } from '../../lib/createPost';
 import {
   type MoveDirection,
   type PhotoStatus,
@@ -22,22 +30,63 @@ import {
 } from '../../lib/pickedPhotos';
 import { type PreparedPhoto, preparePhoto } from '../../lib/preparePhoto';
 import { uploadPhoto } from '../../lib/uploadPhoto';
+import type { PostFailure } from '../../lib/postResult';
 import type { UploadResult } from '../../lib/uploadResponse';
 
 const GRID_COLUMNS = 3;
 const GRID_GAP = 8;
 const SCREEN_PADDING = 16;
 
+// Where posting stands. 'posted' shows a confirmation on the emptied form, and a failure keeps
+// everything as it was so the person can try again.
+type PostingState =
+  | { kind: 'editing' }
+  | { kind: 'posting' }
+  | { kind: 'failed'; failure: PostFailure }
+  | { kind: 'posted' };
+
 export default function NewPost() {
   const [photos, dispatch] = useReducer(pickedPhotosReducer, []);
+  const [body, setBody] = useState('');
+  const [posting, setPosting] = useState<PostingState>({ kind: 'editing' });
   const nextPhotoKey = useRef(0);
   const { width: screenWidth } = useWindowDimensions();
 
   const tileSize =
     (screenWidth - SCREEN_PADDING * 2 - GRID_GAP * (GRID_COLUMNS - 1)) / GRID_COLUMNS;
   const openSlots = remainingPhotoSlots(photos);
+  const bodyCount = describeBodyCount(body);
+  const blocker = whyPostIsBlocked(photos, body);
+  const isPosting = posting.kind === 'posting';
+  const canPost = blocker === null && !isPosting;
+
+  // Starting on a new look clears the last confirmation or failure.
+  function changeBody(text: string) {
+    setBody(text);
+    setPosting({ kind: 'editing' });
+  }
+
+  async function submitPost() {
+    if (!canPost) {
+      return;
+    }
+
+    setPosting({ kind: 'posting' });
+    const result = await createPost(body, uploadedImageIds(photos));
+    if (!result.ok) {
+      setPosting({ kind: 'failed', failure: result.failure });
+      return;
+    }
+
+    dispatch({ type: 'cleared' });
+    setBody('');
+    setPosting({ kind: 'posted' });
+    AccessibilityInfo.announceForAccessibility(newPostCopy.posted);
+  }
 
   async function pickPhotos() {
+    setPosting({ kind: 'editing' });
+
     // On iOS this opens the system photo picker, which needs no photo library permission.
     const result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ['images'],
@@ -74,8 +123,26 @@ export default function NewPost() {
     AccessibilityInfo.announceForAccessibility(newPostCopy.movedTo(newPosition, photos.length));
   }
 
+  // One line under the Post button: why posting failed, or why the button is off. Right after
+  // posting, the confirmation says enough on its own.
+  let postStatusText: string | null = null;
+  if (posting.kind === 'failed') {
+    postStatusText = newPostCopy.postFailures[posting.failure];
+  } else if (blocker !== null && posting.kind === 'editing') {
+    postStatusText = newPostCopy.postBlockers[blocker];
+  }
+
   return (
-    <ScrollView contentContainerStyle={styles.screen}>
+    // Taps go through while the keyboard is up, so Post works on the first tap.
+    <ScrollView
+      contentContainerStyle={styles.screen}
+      keyboardShouldPersistTaps="handled"
+      automaticallyAdjustKeyboardInsets
+    >
+      {posting.kind === 'posted' ? (
+        <Text style={styles.postedText}>{newPostCopy.posted}</Text>
+      ) : null}
+
       <View style={styles.grid}>
         {photos.map((photo, index) => (
           <PhotoTile
@@ -100,8 +167,58 @@ export default function NewPost() {
       ) : (
         <Text style={styles.limitText}>{newPostCopy.photoLimitReached}</Text>
       )}
+
+      <TextInput
+        style={styles.bodyInput}
+        value={body}
+        onChangeText={changeBody}
+        placeholder={newPostCopy.bodyPlaceholder}
+        placeholderTextColor="#777"
+        accessibilityLabel={newPostCopy.bodyLabel}
+        multiline
+        editable={!isPosting}
+      />
+      {/* No maxLength: text over the limit stays, so pasted text isn't silently cut off. */}
+      <BodyCountText count={bodyCount} />
+
+      <Pressable
+        style={[styles.postButton, !canPost && styles.postButtonOff]}
+        accessibilityRole="button"
+        accessibilityState={{ disabled: !canPost, busy: isPosting }}
+        // VoiceOver reads the reason right after "Post, dimmed", without a swipe to the next line.
+        accessibilityHint={postStatusText ?? undefined}
+        disabled={!canPost}
+        onPress={submitPost}
+      >
+        <Text style={styles.postButtonText}>
+          {isPosting ? newPostCopy.posting : newPostCopy.post}
+        </Text>
+      </Pressable>
+      {postStatusText !== null ? (
+        <Text
+          style={[styles.hintText, posting.kind === 'failed' && styles.failureText]}
+          accessibilityRole={posting.kind === 'failed' ? 'alert' : 'text'}
+        >
+          {postStatusText}
+        </Text>
+      ) : null}
     </ScrollView>
   );
+}
+
+function BodyCountText({ count }: { count: BodyCount }) {
+  switch (count.kind) {
+    case 'hidden':
+      return null;
+    case 'remaining':
+      return <Text style={styles.hintText}>{newPostCopy.charactersLeft(count.remaining)}</Text>;
+    case 'over':
+      return (
+        <Text style={[styles.hintText, styles.failureText]}>
+          {newPostCopy.charactersOver(count.over)}
+        </Text>
+      );
+  }
 }
 
 // Prepares a picked photo and uploads it, reporting each step as the photo's status. Also used to
@@ -172,5 +289,37 @@ const styles = StyleSheet.create({
   hintText: {
     color: '#555',
     fontSize: 13,
+  },
+  failureText: {
+    color: '#b00020',
+  },
+  postedText: {
+    fontSize: 15,
+    fontWeight: '600',
+    textAlign: 'center',
+  },
+  bodyInput: {
+    minHeight: 96,
+    padding: 12,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#ccc',
+    fontSize: 15,
+    textAlignVertical: 'top',
+  },
+  postButton: {
+    alignItems: 'center',
+    paddingVertical: 14,
+    borderRadius: 24,
+    backgroundColor: '#111',
+  },
+  // Gray rather than faded, so the button is clearly off without looking broken.
+  postButtonOff: {
+    backgroundColor: '#999',
+  },
+  postButtonText: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: '600',
   },
 });
