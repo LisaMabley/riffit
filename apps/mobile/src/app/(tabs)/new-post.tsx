@@ -1,10 +1,19 @@
 import * as ImagePicker from 'expo-image-picker';
 import { type Dispatch, useReducer, useRef } from 'react';
-import { Pressable, ScrollView, StyleSheet, Text, useWindowDimensions, View } from 'react-native';
+import {
+  AccessibilityInfo,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  Text,
+  useWindowDimensions,
+  View,
+} from 'react-native';
 
 import { PhotoTile } from '../../components/PhotoTile';
 import { newPostCopy } from '../../copy';
 import {
+  type MoveDirection,
   type PhotoStatus,
   type PickedPhoto,
   pickedPhotosReducer,
@@ -55,6 +64,16 @@ export default function NewPost() {
     }
   }
 
+  // The tile can only offer moves that stay in bounds, so the photo always lands next door.
+  // VoiceOver's focus stays where it was, so it hears where the photo went.
+  function movePhoto(photo: PickedPhoto, index: number, direction: MoveDirection) {
+    dispatch({ type: 'moved', key: photo.key, direction });
+
+    const oldPosition = index + 1;
+    const newPosition = direction === 'earlier' ? oldPosition - 1 : oldPosition + 1;
+    AccessibilityInfo.announceForAccessibility(newPostCopy.movedTo(newPosition, photos.length));
+  }
+
   return (
     <ScrollView contentContainerStyle={styles.screen}>
       <View style={styles.grid}>
@@ -67,9 +86,12 @@ export default function NewPost() {
             size={tileSize}
             onRetry={() => prepareAndUpload(photo, dispatch)}
             onRemove={() => dispatch({ type: 'removed', key: photo.key })}
+            onMove={(direction) => movePhoto(photo, index, direction)}
           />
         ))}
       </View>
+
+      {photos.length >= 2 ? <Text style={styles.hintText}>{newPostCopy.coverHint}</Text> : null}
 
       {openSlots > 0 ? (
         <Pressable style={styles.addButton} accessibilityRole="button" onPress={pickPhotos}>
@@ -146,5 +168,9 @@ const styles = StyleSheet.create({
   },
   limitText: {
     textAlign: 'center',
+  },
+  hintText: {
+    color: '#555',
+    fontSize: 13,
   },
 });

@@ -1,8 +1,21 @@
 import { Ionicons } from '@expo/vector-icons';
-import { ActivityIndicator, Image, Pressable, StyleSheet, Text, View } from 'react-native';
+import { useState } from 'react';
+import {
+  type AccessibilityActionEvent,
+  type AccessibilityActionInfo,
+  ActivityIndicator,
+  Image,
+  type ImageLoadEvent,
+  Pressable,
+  StyleSheet,
+  Text,
+  View,
+} from 'react-native';
 
 import { newPostCopy } from '../copy';
-import type { PhotoStatus, PickedPhoto } from '../lib/pickedPhotos';
+import { layoutFullHeight, PHOTO_FRAME_ASPECT } from '../lib/photoFrame';
+import type { PhotoSize } from '../lib/photoSize';
+import type { MoveDirection, PhotoStatus, PickedPhoto } from '../lib/pickedPhotos';
 
 type Props = {
   photo: PickedPhoto;
@@ -11,25 +24,60 @@ type Props = {
   size: number;
   onRetry: () => void;
   onRemove: () => void;
+  onMove: (direction: MoveDirection) => void;
 };
 
-// One picked photo in the New post grid, with its upload progress or failure on top.
-export function PhotoTile({ photo, position, total, size, onRetry, onRemove }: Props) {
+// One picked photo in the New post grid, with its upload progress or failure on top, and buttons
+// to remove it or move it.
+export function PhotoTile({ photo, position, total, size, onRetry, onRemove, onMove }: Props) {
   const statusText = describeStatus(photo.status);
+  const isCover = position === 1;
+  const canMoveEarlier = position > 1;
+  const canMoveLater = position < total;
+
+  // The photo's own size arrives when it loads, already turned upright. Until then it's drawn as
+  // if it were the frame's shape, which doesn't matter because nothing shows yet.
+  const frame: PhotoSize = { width: size, height: size / PHOTO_FRAME_ASPECT };
+  const [photoSize, setPhotoSize] = useState<PhotoSize>(frame);
+  const photoLayout = layoutFullHeight(photoSize, frame);
+
+  function handleLoad(event: ImageLoadEvent) {
+    const { width, height } = event.nativeEvent.source;
+    setPhotoSize({ width, height });
+  }
+
+  // The same moves as the arrow buttons, offered in VoiceOver's actions on the photo, so someone
+  // can reorder without leaving the image.
+  const moveActions: AccessibilityActionInfo[] = [];
+  if (canMoveEarlier) {
+    moveActions.push({ name: 'earlier', label: newPostCopy.moveEarlierAction });
+  }
+  if (canMoveLater) {
+    moveActions.push({ name: 'later', label: newPostCopy.moveLaterAction });
+  }
+
+  function handleAccessibilityAction(event: AccessibilityActionEvent) {
+    const actionName = event.nativeEvent.actionName;
+    if (actionName === 'earlier' || actionName === 'later') {
+      onMove(actionName);
+    }
+  }
 
   return (
-    <View style={[styles.tile, { width: size, height: size * TILE_ASPECT }]}>
+    <View style={[styles.tile, { width: frame.width, height: frame.height }]}>
       <Image
         source={{ uri: photo.sourceUri }}
-        style={StyleSheet.absoluteFill}
-        resizeMode="cover"
+        style={[styles.photo, photoLayout]}
+        onLoad={handleLoad}
         accessible
         accessibilityRole="image"
         accessibilityLabel={newPostCopy.photoLabel(position, total, statusText)}
+        accessibilityActions={moveActions}
+        onAccessibilityAction={handleAccessibilityAction}
       />
 
-      {/* The image's label already reads out the status, so the overlay text is hidden from
-          screen readers. The retry and remove buttons stay reachable. */}
+      {/* The image's label already reads out the status and the cover, so the overlay text and
+          the cover label are hidden from screen readers. The buttons stay reachable. */}
       {photo.status.kind === 'preparing' || photo.status.kind === 'uploading' ? (
         <View style={styles.overlay}>
           <ActivityIndicator color="#fff" />
@@ -58,6 +106,12 @@ export function PhotoTile({ photo, position, total, size, onRetry, onRemove }: P
         </View>
       ) : null}
 
+      {isCover ? (
+        <View style={styles.coverLabel} accessibilityElementsHidden importantForAccessibility="no">
+          <Text style={styles.coverText}>{newPostCopy.cover}</Text>
+        </View>
+      ) : null}
+
       <Pressable
         style={styles.removeButton}
         accessibilityRole="button"
@@ -65,8 +119,33 @@ export function PhotoTile({ photo, position, total, size, onRetry, onRemove }: P
         hitSlop={8}
         onPress={onRemove}
       >
-        <Ionicons name="close-circle" size={24} color="#fff" />
+        <Ionicons name="close-circle" size={ICON_SIZE} color="#fff" />
       </Pressable>
+
+      {/* Earlier is left, matching the grid's reading order. */}
+      {canMoveEarlier ? (
+        <Pressable
+          style={[styles.moveButton, styles.moveEarlierButton]}
+          accessibilityRole="button"
+          accessibilityLabel={newPostCopy.movePhotoEarlier(position)}
+          hitSlop={8}
+          onPress={() => onMove('earlier')}
+        >
+          <Ionicons name="chevron-back-circle" size={ICON_SIZE} color="#fff" />
+        </Pressable>
+      ) : null}
+
+      {canMoveLater ? (
+        <Pressable
+          style={[styles.moveButton, styles.moveLaterButton]}
+          accessibilityRole="button"
+          accessibilityLabel={newPostCopy.movePhotoLater(position)}
+          hitSlop={8}
+          onPress={() => onMove('later')}
+        >
+          <Ionicons name="chevron-forward-circle" size={ICON_SIZE} color="#fff" />
+        </Pressable>
+      ) : null}
     </View>
   );
 }
@@ -84,14 +163,20 @@ function describeStatus(status: PhotoStatus): string {
   }
 }
 
-// Tiles are 3:4 portrait, close to how most outfit photos are shot.
-const TILE_ASPECT = 4 / 3;
+const ICON_SIZE = 24;
+const BUTTON_INSET = 4;
 
 const styles = StyleSheet.create({
   tile: {
     borderRadius: 8,
     overflow: 'hidden',
-    backgroundColor: '#eee',
+    // A gray at 30% lightness: softer than black, and still dark enough for the white buttons to
+    // show where a narrow photo leaves bars at the sides.
+    backgroundColor: '#4d4d4d',
+  },
+  photo: {
+    position: 'absolute',
+    top: 0,
   },
   overlay: {
     position: 'absolute',
@@ -117,9 +202,33 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontWeight: '600',
   },
+  coverLabel: {
+    position: 'absolute',
+    top: BUTTON_INSET,
+    left: BUTTON_INSET,
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    borderRadius: 10,
+    backgroundColor: 'rgba(0, 0, 0, 0.6)',
+  },
+  coverText: {
+    color: '#fff',
+    fontSize: 12,
+    fontWeight: '600',
+  },
   removeButton: {
     position: 'absolute',
-    top: 4,
-    right: 4,
+    top: BUTTON_INSET,
+    right: BUTTON_INSET,
+  },
+  moveButton: {
+    position: 'absolute',
+    bottom: BUTTON_INSET,
+  },
+  moveEarlierButton: {
+    left: BUTTON_INSET,
+  },
+  moveLaterButton: {
+    right: BUTTON_INSET,
   },
 });
