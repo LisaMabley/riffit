@@ -185,6 +185,8 @@ export default function NewPost() {
         style={[styles.postButton, !canPost && styles.postButtonOff]}
         accessibilityRole="button"
         accessibilityState={{ disabled: !canPost, busy: isPosting }}
+        // VoiceOver reads the reason right after "Post, dimmed", without a swipe to the next line.
+        accessibilityHint={postStatusText ?? undefined}
         disabled={!canPost}
         onPress={submitPost}
       >
