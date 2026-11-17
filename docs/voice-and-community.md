@@ -1,6 +1,6 @@
 # Riffit — Voice and Community
 
-_Updated 2026-11-16_
+_Updated 2026-11-17_
 
 How Riffit sounds, and how its interface cultivates a kind, supportive, inclusive, and creatively adventurous community. These values should show up throughout the experience, not just during onboarding.
 
@@ -157,6 +157,35 @@ The first photo is the one the feed shows (plan §9), so the copy calls it the c
 - Each photo has arrow buttons to move it. Screen readers hear "Move photo 2 earlier" and "Move photo 2 later." Photo 1 has no "earlier" button, and the last photo has no "later" button.
 - In VoiceOver's actions on the photo itself: "Move earlier" and "Move later."
 - After a move, screen readers hear where the photo landed: "Now photo 1 of 4."
+
+## Posting
+
+Text is optional, and the photos can carry the whole post. Posting itself should feel like a small win, not a form submission.
+
+**Text:**
+
+- Placeholder: "Say something about the look, or let it speak for itself."
+- Screen readers hear "Post text, optional."
+- The count shows only near the limit: "120 characters left." Past it: "15 over. Trim a little?" Text over the limit isn't cut off, so pasted text isn't lost.
+
+**Post button:**
+
+- "Post," and "Posting…" while it works.
+- When it can't post yet, one line below says why:
+  - No photos: "Add at least one photo to post."
+  - Photos still uploading: "Hang tight, your photos are still uploading."
+  - A photo failed: "One photo didn't make it. Try it again or remove it."
+  - Text over the limit: "Trim the text a little to post."
+
+**After posting:** the form clears, and the tab says "Posted. The world is now slightly better dressed." Screen readers hear it too.
+
+**When posting fails:** everything stays as it was, so the person can try again right away.
+
+| What went wrong | Copy |
+| --- | --- |
+| A photo is no longer available, for example cleaned up after sitting unposted for a day (plan §9) | "Some of these photos expired before posting. Remove them and add them again." |
+| The text is over the limit (the app should catch this first) | "That's a bit long. Trim it to 2,000 characters and try again." |
+| No connection, signed out, profile not finished, or anything else | The same copy as for photos, above |
 
 ## Product mechanics
 
