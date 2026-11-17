@@ -24,7 +24,8 @@ export type PickedPhotosAction =
   | { type: 'added'; photos: PickedPhoto[] }
   | { type: 'statusChanged'; key: string; status: PhotoStatus }
   | { type: 'removed'; key: string }
-  | { type: 'moved'; key: string; direction: MoveDirection };
+  | { type: 'moved'; key: string; direction: MoveDirection }
+  | { type: 'cleared' };
 
 // Earlier is toward the cover, the first photo, which the feed shows (spec §9).
 export type MoveDirection = 'earlier' | 'later';
@@ -52,6 +53,10 @@ export function pickedPhotosReducer(
 
     case 'moved':
       return movePhoto(photos, action.key, action.direction);
+
+    // After posting, so the tab is ready for the next look.
+    case 'cleared':
+      return [];
   }
 }
 
