@@ -1,9 +1,11 @@
 import { Ionicons } from '@expo/vector-icons';
+import { useState } from 'react';
 import {
   type AccessibilityActionEvent,
   type AccessibilityActionInfo,
   ActivityIndicator,
   Image,
+  type ImageLoadEvent,
   Pressable,
   StyleSheet,
   Text,
@@ -11,6 +13,8 @@ import {
 } from 'react-native';
 
 import { newPostCopy } from '../copy';
+import { layoutFullHeight, PHOTO_FRAME_ASPECT } from '../lib/photoFrame';
+import type { PhotoSize } from '../lib/photoSize';
 import type { MoveDirection, PhotoStatus, PickedPhoto } from '../lib/pickedPhotos';
 
 type Props = {
@@ -31,6 +35,17 @@ export function PhotoTile({ photo, position, total, size, onRetry, onRemove, onM
   const canMoveEarlier = position > 1;
   const canMoveLater = position < total;
 
+  // The photo's own size arrives when it loads, already turned upright. Until then it's drawn as
+  // if it were the frame's shape, which doesn't matter because nothing shows yet.
+  const frame: PhotoSize = { width: size, height: size / PHOTO_FRAME_ASPECT };
+  const [photoSize, setPhotoSize] = useState<PhotoSize>(frame);
+  const photoLayout = layoutFullHeight(photoSize, frame);
+
+  function handleLoad(event: ImageLoadEvent) {
+    const { width, height } = event.nativeEvent.source;
+    setPhotoSize({ width, height });
+  }
+
   // The same moves as the arrow buttons, offered in VoiceOver's actions on the photo, so someone
   // can reorder without leaving the image.
   const moveActions: AccessibilityActionInfo[] = [];
@@ -49,11 +64,11 @@ export function PhotoTile({ photo, position, total, size, onRetry, onRemove, onM
   }
 
   return (
-    <View style={[styles.tile, { width: size, height: size * TILE_ASPECT }]}>
+    <View style={[styles.tile, { width: frame.width, height: frame.height }]}>
       <Image
         source={{ uri: photo.sourceUri }}
-        style={StyleSheet.absoluteFill}
-        resizeMode="cover"
+        style={[styles.photo, photoLayout]}
+        onLoad={handleLoad}
         accessible
         accessibilityRole="image"
         accessibilityLabel={newPostCopy.photoLabel(position, total, statusText)}
@@ -148,8 +163,6 @@ function describeStatus(status: PhotoStatus): string {
   }
 }
 
-// Tiles are 3:4 portrait, close to how most outfit photos are shot.
-const TILE_ASPECT = 4 / 3;
 const ICON_SIZE = 24;
 const BUTTON_INSET = 4;
 
@@ -157,7 +170,12 @@ const styles = StyleSheet.create({
   tile: {
     borderRadius: 8,
     overflow: 'hidden',
-    backgroundColor: '#eee',
+    // Dark, so the white buttons still show where a narrow photo leaves bars at the sides.
+    backgroundColor: '#222',
+  },
+  photo: {
+    position: 'absolute',
+    top: 0,
   },
   overlay: {
     position: 'absolute',
